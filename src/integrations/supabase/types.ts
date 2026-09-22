@@ -3360,13 +3360,299 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activities: {
+        Row: {
+          activity_date: string
+          category: string
+          cover_image_url: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          location: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          activity_date: string
+          category?: string
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          location?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          activity_date?: string
+          category?: string
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          location?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      activity_participants: {
+        Row: {
+          activity_id: string
+          created_at: string
+          family_member_id: string
+          guest_count: number
+          id: string
+          note: string | null
+          registered_by: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          activity_id: string
+          created_at?: string
+          family_member_id: string
+          guest_count?: number
+          id?: string
+          note?: string | null
+          registered_by?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          activity_id?: string
+          created_at?: string
+          family_member_id?: string
+          guest_count?: number
+          id?: string
+          note?: string | null
+          registered_by?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_participants_activity_id_fkey"
+            columns: ["activity_id"]
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_participants_family_member_id_fkey"
+            columns: ["family_member_id"]
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      activity_photos: {
+        Row: {
+          activity_id: string
+          caption: string | null
+          created_at: string
+          id: string
+          image_url: string
+          sort_order: number
+          uploaded_by: string
+        }
+        Insert: {
+          activity_id: string
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          sort_order?: number
+          uploaded_by?: string
+        }
+        Update: {
+          activity_id?: string
+          caption?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          sort_order?: number
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_photos_activity_id_fkey"
+            columns: ["activity_id"]
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      family_members: {
+        Row: {
+          bio: string | null
+          birth_date: string | null
+          created_at: string
+          death_date: string | null
+          full_name: string
+          gender: string
+          id: string
+          parent_id: string | null
+          photo_url: string | null
+          profile_id: string | null
+          sort_order: number
+          spouse_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          bio?: string | null
+          birth_date?: string | null
+          created_at?: string
+          death_date?: string | null
+          full_name: string
+          gender?: string
+          id?: string
+          parent_id?: string | null
+          photo_url?: string | null
+          profile_id?: string | null
+          sort_order?: number
+          spouse_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bio?: string | null
+          birth_date?: string | null
+          created_at?: string
+          death_date?: string | null
+          full_name?: string
+          gender?: string
+          id?: string
+          parent_id?: string | null
+          photo_url?: string | null
+          profile_id?: string | null
+          sort_order?: number
+          spouse_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_members_parent_id_fkey"
+            columns: ["parent_id"]
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_members_profile_id_fkey"
+            columns: ["profile_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_members_spouse_id_fkey"
+            columns: ["spouse_id"]
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invite_codes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          note: string | null
+          role: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          note?: string | null
+          role?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          note?: string | null
+          role?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          family_member_id: string | null
+          id: string
+          is_approved: boolean
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          family_member_id?: string | null
+          id: string
+          is_approved?: boolean
+          role?: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          family_member_id?: string | null
+          id?: string
+          is_approved?: boolean
+          role?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_family_member_id_fkey"
+            columns: ["family_member_id"]
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      bootstrap_status: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      is_approved_member: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_family_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      redeem_invite_code: {
+        Args: { p_code: string }
+        Returns: Json
+      }
+      validate_invite_code: {
+        Args: { p_code: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
