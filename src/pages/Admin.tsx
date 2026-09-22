@@ -3,6 +3,7 @@ import { Pencil, Plus, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { InviteCodeManager } from "@/components/admin/invite-code-manager";
+import { AlbumImporter } from "@/components/admin/album-importer";
 import { EmptyState } from "@/components/common/empty-state";
 import { PageHeader } from "@/components/common/page-header";
 import { MemberForm } from "@/components/members/member-form";
@@ -38,11 +39,16 @@ const Admin = () => {
         subtitle={t("admin.subtitle")}
       />
 
-      <Tabs defaultValue="invites" className="space-y-6">
+      <Tabs defaultValue="import" className="space-y-6">
         <TabsList>
+          <TabsTrigger value="import">{t("admin.tabs.import")}</TabsTrigger>
           <TabsTrigger value="invites">{t("admin.tabs.invites")}</TabsTrigger>
           <TabsTrigger value="members">{t("admin.tabs.members")}</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="import">
+          <AlbumImporter />
+        </TabsContent>
 
         <TabsContent value="invites">
           <InviteCodeManager />
