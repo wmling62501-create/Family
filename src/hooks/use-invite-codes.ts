@@ -39,6 +39,12 @@ export const useCreateInviteCode = () => {
 
   return useMutation({
     mutationFn: async (input: CreateInviteCodeInput) => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) throw new Error("Not signed in");
+
       const { data, error } = await supabase
         .from("invite_codes")
         .insert({
@@ -46,6 +52,7 @@ export const useCreateInviteCode = () => {
           role: input.role,
           note: input.note,
           expires_at: input.expiresAt,
+          created_by: user.id,
         })
         .select()
         .single();

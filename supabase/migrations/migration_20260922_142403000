@@ -1,0 +1,4 @@
+-- invite_codes.created_by 漏了預設值，導致新增邀請碼時 created_by 為 NULL，
+-- 無法通過 RLS 的 (created_by = auth.uid()) 檢查。補上與其他表一致的預設值。
+alter table public.invite_codes
+  alter column created_by set default auth.uid();
