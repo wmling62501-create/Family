@@ -1,0 +1,6 @@
+-- 清掉由匯入流程留下的 Google 相簿標題後綴（僅針對剛剛匯入的那筆活動）
+update public.activities
+set title = trim(regexp_replace(title, '\s*-\s*Google\s+[^-]+$', '')),
+    updated_at = now()
+where id = '092fc4b8-d7a6-40d8-afb0-d136a5f51b43'
+  and title ~ '\s*-\s*Google\s+[^-]+$';

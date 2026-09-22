@@ -49,7 +49,8 @@ const extractPhotoUrls = (html: string) => {
 
 const extractTitle = (html: string) => {
   const raw = html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "";
-  return raw.replace(/\s*-\s*Google Photos\s*$/i, "").trim();
+  // Google localizes the suffix, e.g. "- Google Photos" / "- Google 相簿".
+  return raw.replace(/\s*-\s*Google\s+[^-]+$/i, "").trim();
 };
 
 Deno.serve(async (req) => {
