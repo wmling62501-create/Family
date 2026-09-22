@@ -18,27 +18,45 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreateActivity } from "@/hooks/use-activities";
+import { useCreateActivity, useUpdateActivity } from "@/hooks/use-activities";
 import { useCategoryLabels } from "@/hooks/use-labels";
 import { useFamilyMembers } from "@/hooks/use-members";
 import { ACTIVITY_CATEGORIES, type ActivityCategory } from "@/lib/constants";
+import type { ActivityWithDetails } from "@/types/app";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
-export const ActivityForm = () => {
+type ActivityFormProps = {
+  /** Pass an activity to edit it; omit to create a new one. */
+  activity?: ActivityWithDetails;
+};
+
+export const ActivityForm = ({ activity }: ActivityFormProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const categoryLabels = useCategoryLabels();
   const { data: members = [] } = useFamilyMembers();
   const createActivity = useCreateActivity();
+  const updateActivity = useUpdateActivity();
+  const isEdit = Boolean(activity);
 
-  const [title, setTitle] = useState("");
-  const [activityDate, setActivityDate] = useState(today());
-  const [category, setCategory] = useState<ActivityCategory>("gathering");
-  const [location, setLocation] = useState("");
-  const [description, setDescription] = useState("");
-  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+  const [title, setTitle] = useState(activity?.title ?? "");
+  const [activityDate, setActivityDate] = useState(
+    activity?.activity_date ?? today(),
+  );
+  const [category, setCategory] = useState<ActivityCategory>(
+    (activity?.category as ActivityCategory) ?? "gathering",
+  );
+  const [location, setLocation] = useState(activity?.location ?? "");
+  const [description, setDescription] = useState(activity?.description ?? "");
+  const [photoUrls, setPhotoUrls] = useState<string[]>(
+    activity?.photos.map((photo) => photo.image_url) ?? [],
+  );
   const [participantIds, setParticipantIds] = useState<string[]>([]);
+
+  const attendingMembers = (activity?.participants ?? []).filter(
+    (participant) => participant.status === "attending",
+  );
 
   const toggleParticipant = (memberId: string) => {
     setParticipantIds((current) =>
@@ -61,7 +79,27 @@ export const ActivityForm = () => {
     }
 
     try {
-      const activity = await createActivity.mutateAsync({
+      if (activity) {
+        await updateActivity.mutateAsync({
+          id: activity.id,
+          title: title.trim(),
+          description: description.trim() ? description.trim() : null,
+          activity_date: activityDate,
+          location: location.trim() ? location.trim() : null,
+          category,
+          photoUrls,
+          originalPhotos: activity.photos.map((photo) => ({
+            id: photo.id,
+            image_url: photo.image_url,
+          })),
+        });
+
+        toast.success(t("activities.form.successEdit"));
+        navigate(`/activities/${activity.id}`);
+        return;
+      }
+
+      const created = await createActivity.mutateAsync({
         title: title.trim(),
         description: description.trim() ? description.trim() : null,
         activity_date: activityDate,
@@ -72,12 +110,14 @@ export const ActivityForm = () => {
       });
 
       toast.success(t("activities.form.success"));
-      navigate(`/activities/${activity.id}`);
+      navigate(`/activities/${created.id}`);
     } catch (error) {
-      console.error("Failed to create activity", error);
+      console.error("Failed to save activity", error);
       toast.error(t("common.error"));
     }
   };
+
+  const isPending = createActivity.isPending || updateActivity.isPending;
 
   return (
     <form
@@ -197,10 +237,32 @@ export const ActivityForm = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-xs text-muted-foreground">
-              {t("activities.form.participantsHint")}
+              {isEdit
+                ? t("activities.form.participantsLocked")
+                : t("activities.form.participantsHint")}
             </p>
 
-            {members.length === 0 ? (
+            {isEdit ? (
+              attendingMembers.length === 0 ? (
+                <p className="rounded-md bg-secondary/70 px-3 py-2 text-sm text-muted-foreground">
+                  {t("rsvp.empty")}
+                </p>
+              ) : (
+                <ul className="flex flex-wrap gap-2">
+                  {attendingMembers.map((participant) => (
+                    <li
+                      key={participant.id}
+                      className="rounded-full bg-secondary px-3 py-1 text-xs text-secondary-foreground"
+                    >
+                      {members.find(
+                        (member) =>
+                          member.id === participant.family_member_id,
+                      )?.full_name ?? t("common.unknown")}
+                    </li>
+                  ))}
+                </ul>
+              )
+            ) : members.length === 0 ? (
               <p className="rounded-md bg-secondary/70 px-3 py-2 text-sm text-muted-foreground">
                 {t("activities.form.noMembers")}
               </p>
@@ -228,14 +290,16 @@ export const ActivityForm = () => {
           type="submit"
           size="lg"
           className="w-full"
-          disabled={createActivity.isPending}
+          disabled={isPending}
         >
-          {createActivity.isPending ? (
+          {isPending ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             <CalendarDays className="mr-2 h-4 w-4" />
           )}
-          {t("activities.form.submit")}
+          {isEdit
+            ? t("activities.form.submitEdit")
+            : t("activities.form.submit")}
         </Button>
       </div>
     </form>

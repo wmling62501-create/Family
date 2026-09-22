@@ -3,11 +3,12 @@ import {
   CalendarDays,
   Camera,
   MapPin,
+  Pencil,
   Trash2,
   Users,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { RsvpPanel } from "@/components/activities/rsvp-panel";
@@ -91,10 +92,18 @@ const ActivityDetail = () => {
             {activity.title}
           </h1>
           {canManage ? (
-            <Button variant="outline" onClick={() => void handleDelete()}>
-              <Trash2 className="mr-2 h-4 w-4 text-destructive" />
-              {t("common.delete")}
-            </Button>
+            <div className="flex gap-2">
+              <Button asChild variant="outline">
+                <Link to={`/activities/${activity.id}/edit`}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  {t("activities.edit")}
+                </Link>
+              </Button>
+              <Button variant="outline" onClick={() => void handleDelete()}>
+                <Trash2 className="mr-2 h-4 w-4 text-destructive" />
+                {t("common.delete")}
+              </Button>
+            </div>
           ) : null}
         </div>
       </div>

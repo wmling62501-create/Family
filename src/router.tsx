@@ -2,6 +2,7 @@ import { AppLayout } from "./components/layout/app-layout";
 import { ProtectedRoute } from "./components/layout/protected-route";
 import Activities from "./pages/Activities";
 import ActivityDetail from "./pages/ActivityDetail";
+import ActivityEdit from "./pages/ActivityEdit";
 import ActivityNew from "./pages/ActivityNew";
 import Admin from "./pages/Admin";
 import Index from "./pages/Index";
@@ -33,6 +34,11 @@ export const routers = [
         path: "activities/:id",
         name: "activityDetail",
         element: <ActivityDetail />,
+      },
+      {
+        path: "activities/:id/edit",
+        name: "activityEdit",
+        element: <ActivityEdit />,
       },
       { path: "members", name: "members", element: <Members /> },
       { path: "members/:id", name: "memberDetail", element: <MemberDetail /> },
