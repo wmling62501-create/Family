@@ -131,38 +131,49 @@
 
 ## Implementation checklist
 
-- [ ] 開啟 Enter Cloud，載入 `enter_cloud` skill 並依其流程建立專案連線
-- [ ] 建立 `profiles`、`family_members`、`activities`、`activity_photos`、`activity_participants`、`invite_codes` 六張表與 RLS 政策
-- [ ] 建立 `handle_new_user` trigger，讓註冊後自動產生 `profiles` 資料列
-- [ ] 建立 `family-media` Storage bucket 與上傳/讀取政策
-- [ ] 實作 `validate-invite-code`、`redeem-invite-code`、`create-invite-code` 三個 backend functions
-- [ ] 產生 `src/integrations/supabase/client.ts` 與 `src/types/database.ts`
-- [ ] 實作 `use-auth.tsx`（session/profile/role 載入、signIn、signUp+邀請碼、signOut）
-- [ ] 實作 `protected-route.tsx`，未登入導向 `/login`、非 admin 擋 `/admin`
-- [ ] 實作 `/login` 登入與邀請碼註冊頁，含驗證失敗與需 Email 驗證的提示
-- [ ] 實作 `/admin`：產生/複製/查看邀請碼狀態、成員新增與編輯
-- [ ] 實作 `use-members.ts`、`/members` 名錄（依輩分分組）與 `/members/:id` 成員頁
-- [ ] 實作 `member-form.tsx`，含 `parent_id`/`spouse_id` 自身參照與循環防護驗證
-- [ ] 實作 `src/lib/family-tree.ts`（由扁平資料組樹、多根節點、孤兒節點降級為根）
-- [ ] 實作 `/tree` 家族樹（以最年長祖先為根向下展開、配偶並列、分支可收合）
-- [ ] 實作 `use-activities.ts` 與 `/activities` 時間軸（年份/類型/成員篩選）
-- [ ] 實作 `activity-form.tsx` 與 `/activities/new`（含照片上傳與參與成員勾選）
-- [ ] 實作 `/activities/:id` 詳情頁、相簿格狀瀏覽與 `rsvp-panel.tsx`（參加/不參加/人數 upsert）
-- [ ] 更新 `src/router.tsx` 註冊全部新路由，並讓 `Index.tsx` 成為真正的首頁
-- [ ] 更新 `src/index.css` 與 `tailwind.config.ts` 為米白+暖橘設計系統（含 dark 版本與字型）
-- [ ] 更新 `i18n.config.json` 為 zh-TW + en，並補齊 `public/locales/zh-TW.json`、`en.json` 全部文案
-- [ ] 所有頁面使用語意 token 與 RWD（行動版單欄、桌機多欄），無寫死顏色
+- [x] 開啟 Enter Cloud，載入 `enter_cloud` skill 並依其流程建立專案連線
+- [x] 建立 `profiles`、`family_members`、`activities`、`activity_photos`、`activity_participants`、`invite_codes` 六張表與 RLS 政策
+- [x] 建立 `handle_new_user` trigger，讓註冊後自動產生 `profiles` 資料列（第一位註冊者自動成為管理員）
+- [x] 建立 `family-media` Storage bucket 與上傳/讀取政策
+- [x] 邀請碼機制：改以 `bootstrap_status`、`validate_invite_code`、`redeem_invite_code` 三個 security definer RPC 實作（權限邏輯留在資料庫，不需服務金鑰）
+- [x] 使用平台產生的 `src/integrations/supabase/client.ts` 與 `types.ts`
+- [x] 實作 `use-auth.ts` + `auth-provider.tsx`（session/profile/role 載入、signIn、signUp+邀請碼、signOut）
+- [x] 實作 `protected-route.tsx`，未登入或未核准導向 `/login`、非 admin 擋 `/admin`
+- [x] 實作 `/login` 登入、邀請碼註冊與首次啟動管理員建立流程
+- [x] 實作 `/admin`：產生/複製/查看邀請碼狀態、成員新增與編輯
+- [x] 實作 `use-members.ts`、`/members` 名錄（依輩分分組）與 `/members/:id` 成員頁
+- [x] 實作 `member-form.tsx`，含 `parent_id`/`spouse_id` 自身參照與循環防護（資料庫 trigger + 前端錯誤對應）
+- [x] 實作 `src/lib/family-tree.ts`（由扁平資料組樹、多根節點、孤兒節點降級為根、循環防護）
+- [x] 實作 `/tree` 家族樹（以最年長祖先為根向下展開、配偶並列、分支可收合）
+- [x] 實作 `use-activities.ts` 與 `/activities` 時間軸（年份/類型/成員篩選）
+- [x] 實作 `activity-form.tsx` 與 `/activities/new`（含照片上傳與參與成員勾選）
+- [x] 實作 `/activities/:id` 詳情頁、相簿格狀瀏覽與 `rsvp-panel.tsx`（參加/不參加/人數 upsert）
+- [x] 更新 `src/router.tsx` 註冊全部新路由，並讓 `Index.tsx` 成為真正的首頁
+- [x] 更新 `src/index.css` 與 `tailwind.config.ts` 為米白+暖橘設計系統（含 dark 版本、漸層、陰影與字型）
+- [x] 更新 `i18n.config.json` 為 zh-TW + en，並補齊 `public/locales/zh-TW.json`、`en.json` 全部文案
+- [x] 所有頁面使用語意 token 與 RWD（行動版單欄、桌機多欄），無寫死顏色
 
 ## Verification checklist
 
-- [ ] `pnpm lint` 與 `pnpm exec tsc --noEmit` 全數通過
-- [ ] `pnpm run build` 成功
-- [ ] 未登入訪問 `/`、`/activities`、`/tree` → 導向 `/login`；一般成員訪問 `/admin` → 被擋下
-- [ ] 錯誤邀請碼 / 已使用邀請碼 / 過期邀請碼註冊 → 顯示對應錯誤且不建立帳號
-- [ ] 正確邀請碼註冊 → 可登入、`profiles.role` 正確、邀請碼狀態變為已使用
-- [ ] 新增活動（含照片、地點、類型、參與成員）→ 時間軸立即出現該筆，照片可正常顯示
-- [ ] 出席登記：同一成員重複送出 → upsert 不產生重複列；人數統計正確
-- [ ] 家族樹：三代以上資料正確分層，配偶並列，無循環資料時不崩潰
-- [ ] 邊界：無任何活動 / 無成員 / 活動無照片時顯示空狀態而非破版
-- [ ] 語言切換 zh-TW ↔ en：導覽與所有頁面文案皆切換，重新載入後保留
-- [ ] 用 `website_screenshot` 以 `mobile_390` 與 `desktop_1280` 檢視 `/`、`/activities`、`/tree`、`/activities/:id` 版面正常
+- [x] `pnpm lint` 與 `pnpm exec tsc --noEmit` 全數通過
+- [x] `pnpm run build` 成功
+- [x] `check-i18n.mjs` 通過、`scan-i18n.mjs` 產出 `reports/i18n/` 四份報告
+- [x] 資料庫層確認：六張表 RLS 已啟用且政策齊備（`supabase_get_table_schema`）
+- [x] 資料庫層確認：`bootstrap_status()` 回傳 `needs_bootstrap=true`；未知邀請碼回 `not_found`、空字串回 `empty`
+- [x] Storage 確認：`family-media` 為 public bucket（10MB、四種圖片格式），read/insert/delete 政策齊備
+- [ ] 未登入訪問 `/`、`/activities`、`/tree` → 導向 `/login`；一般成員訪問 `/admin` → 被擋下（需登入後實測）
+- [ ] 錯誤 / 已使用 / 過期邀請碼註冊 → 顯示對應錯誤且不建立帳號（前端流程需實測）
+- [ ] 正確邀請碼註冊 → 可登入、`profiles.role` 正確、邀請碼狀態變為已使用（需實測）
+- [ ] 新增活動（含照片、地點、類型、參與成員）→ 時間軸立即出現該筆，照片可正常顯示（需實測）
+- [ ] 出席登記：同一成員重複送出 → upsert 不產生重複列；人數統計正確（需實測）
+- [ ] 家族樹：三代以上資料正確分層，配偶並列，無循環資料時不崩潰（需實測）
+- [ ] 邊界：無任何活動 / 無成員 / 活動無照片時顯示空狀態而非破版（需實測）
+- [ ] 語言切換 zh-TW ↔ en：導覽與所有頁面文案皆切換，重新載入後保留（需實測）
+- [ ] 以 `mobile_390` 與 `desktop_1280` 檢視 `/`、`/activities`、`/tree`、`/activities/:id` 版面正常（本次截圖工具在環境中無法取得畫面，待預覽可正常顯示後補驗）
+
+### 尚未完成的原因
+
+標記「需實測」的項目需要一個已核准的家族成員帳號才能執行；資料庫目前是空的（尚無任何帳號與資料），
+因此登入後的路徑要等第一位管理員註冊、並提供家族成員資料後才能完成驗證。
+截圖工具在本環境回傳空白畫面（即使 404 靜態頁也一樣），已改以模組伺服狀態、資料庫查詢與建置結果交叉驗證。
+

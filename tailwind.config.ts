@@ -19,6 +19,25 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				display: [
+					'"Noto Serif TC"',
+					'"Songti TC"',
+					'"PingFang TC"',
+					'"Microsoft JhengHei"',
+					'ui-serif',
+					'Georgia',
+					'serif'
+				],
+				sans: [
+					'"PingFang TC"',
+					'"Noto Sans TC"',
+					'"Microsoft JhengHei"',
+					'ui-sans-serif',
+					'system-ui',
+					'sans-serif'
+				]
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -27,7 +46,8 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					glow: 'hsl(var(--primary-glow))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -69,6 +89,17 @@ export default {
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
 			},
+			backgroundImage: {
+				'gradient-warm': 'var(--gradient-warm)',
+				'gradient-subtle': 'var(--gradient-subtle)'
+			},
+			boxShadow: {
+				elegant: 'var(--shadow-elegant)',
+				glow: 'var(--shadow-glow)'
+			},
+			transitionTimingFunction: {
+				smooth: 'cubic-bezier(0.4, 0, 0.2, 1)'
+			},
 			keyframes: {
 				'accordion-down': {
 					from: {
@@ -85,11 +116,33 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fade-up': {
+					from: {
+						opacity: '0',
+						transform: 'translateY(12px)'
+					},
+					to: {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
+				},
+				'grow-in': {
+					from: {
+						opacity: '0',
+						transform: 'scale(0.96)'
+					},
+					to: {
+						opacity: '1',
+						transform: 'scale(1)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-up': 'fade-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) both',
+				'grow-in': 'grow-in 0.35s cubic-bezier(0.4, 0, 0.2, 1) both'
 			}
 		}
 	},
