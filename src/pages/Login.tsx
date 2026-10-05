@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, Loader2, LogIn, UserPlus } from "lucide-react";
+import { Heart, KeyRound, Loader2, LogIn, UserPlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Navigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
@@ -36,6 +36,10 @@ const errorKeyOf = (code: AuthErrorCode) => {
       return "auth.error.invalidEmail";
     case "missingName":
       return "auth.error.missingName";
+    case "passwordMismatch":
+      return "auth.error.passwordMismatch";
+    case "tooManyRequests":
+      return "auth.error.tooManyRequests";
     default:
       return "common.error";
   }
@@ -52,6 +56,7 @@ const Login = () => {
     signIn,
     signUpWithInvite,
     redeemInviteCode,
+    sendPasswordReset,
     signOut,
   } = useAuth();
 
@@ -60,6 +65,8 @@ const Login = () => {
   const [displayName, setDisplayName] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [pending, setPending] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   const from = (location.state as { from?: string } | null)?.from ?? "/";
 
@@ -113,6 +120,26 @@ const Login = () => {
       return;
     }
     toast.success(t("auth.signUpSuccess"));
+  };
+
+  const handleSendReset = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setPending(true);
+    const error = await sendPasswordReset(email);
+    setPending(false);
+
+    if (error) {
+      toast.error(
+        error === "tooManyRequests"
+          ? t("auth.error.tooManyRequests")
+          : error === "invalidEmail"
+            ? t("auth.error.invalidEmail")
+            : t("auth.reset.error"),
+      );
+      return;
+    }
+
+    setResetSent(true);
   };
 
   return (
@@ -228,6 +255,63 @@ const Login = () => {
                   {t("auth.signUpAction")}
                 </Button>
               </form>
+            ) : showForgot ? (
+              <div className="space-y-5">
+                <div className="space-y-2 text-center">
+                  <p className="font-display text-lg text-foreground">
+                    {t("auth.reset.title")}
+                  </p>
+                  {resetSent ? (
+                    <p className="rounded-md bg-accent/70 px-3 py-2 text-sm text-accent-foreground">
+                      {t("auth.reset.sent")}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      {t("auth.reset.hint")}
+                    </p>
+                  )}
+                </div>
+
+                {resetSent ? null : (
+                  <form
+                    onSubmit={(event) => {
+                      void handleSendReset(event);
+                    }}
+                    className="space-y-4"
+                  >
+                    <div className="space-y-2">
+                      <Label htmlFor="forgot-email">{t("auth.email")}</Label>
+                      <Input
+                        id="forgot-email"
+                        type="email"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        placeholder={t("auth.emailPlaceholder")}
+                      />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={pending}>
+                      {pending ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <KeyRound className="mr-2 h-4 w-4" />
+                      )}
+                      {pending ? t("auth.reset.sending") : t("auth.reset.send")}
+                    </Button>
+                  </form>
+                )}
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full"
+                  onClick={() => {
+                    setShowForgot(false);
+                    setResetSent(false);
+                  }}
+                >
+                  {t("auth.reset.backToSignIn")}
+                </Button>
+              </div>
             ) : (
               <Tabs defaultValue="signIn">
                 <TabsList className="grid w-full grid-cols-2">
@@ -271,6 +355,14 @@ const Login = () => {
                         <LogIn className="mr-2 h-4 w-4" />
                       )}
                       {t("auth.signInAction")}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="w-full"
+                      onClick={() => setShowForgot(true)}
+                    >
+                      {t("auth.forgotPassword")}
                     </Button>
                   </form>
                 </TabsContent>

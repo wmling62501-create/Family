@@ -12,6 +12,8 @@ export type AuthErrorCode =
   | "shortPassword"
   | "invalidEmail"
   | "missingName"
+  | "passwordMismatch"
+  | "tooManyRequests"
   | "unauthenticated"
   | "unknown";
 
@@ -32,9 +34,13 @@ export type AuthContextValue = {
   isAdmin: boolean;
   isApproved: boolean;
   needsBootstrap: boolean;
+  /** True while the visitor is following a password-recovery link. */
+  passwordRecovery: boolean;
   signIn: (input: SignInInput) => Promise<AuthErrorCode | null>;
   signUpWithInvite: (input: SignUpInput) => Promise<AuthErrorCode | null>;
   redeemInviteCode: (code: string) => Promise<AuthErrorCode | null>;
+  sendPasswordReset: (email: string) => Promise<AuthErrorCode | null>;
+  updatePassword: (password: string) => Promise<AuthErrorCode | null>;
   signOut: () => Promise<void>;
 };
 

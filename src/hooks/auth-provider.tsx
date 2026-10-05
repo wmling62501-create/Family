@@ -17,6 +17,15 @@ import type { InviteCodeResult, Profile } from "@/types/app";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/**
+ * A recovery link carries `type=recovery` in the URL hash. Capture it before
+ * the auth client consumes and clears it, so the PASSWORD_RECOVERY event is
+ * never the only signal (it can fire before React subscribes).
+ */
+const urlSignalsRecovery =
+  typeof window !== "undefined" &&
+  window.location.hash.includes("type=recovery");
+
 const codeFromReason = (reason?: string): AuthErrorCode => {
   switch (reason) {
     case "used":
@@ -38,6 +47,8 @@ const codeFromMessage = (message: string): AuthErrorCode => {
   if (normalized.includes("invalid login")) return "invalidCredentials";
   if (normalized.includes("already registered")) return "emailTaken";
   if (normalized.includes("at least 6")) return "shortPassword";
+  if (normalized.includes("only request this")) return "tooManyRequests";
+  if (normalized.includes("rate limit")) return "tooManyRequests";
   return "unknown";
 };
 
@@ -47,6 +58,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [needsBootstrap, setNeedsBootstrap] = useState(false);
+  const [passwordRecovery, setPasswordRecovery] = useState(urlSignalsRecovery);
 
   const loadProfile = useCallback(async (userId: string) => {
     const { data, error } = await supabase
@@ -68,8 +80,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Register the listener before restoring the session, otherwise the initial
     // restore can fire before anyone is listening.
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      (_event, nextSession) => {
+      (event, nextSession) => {
         if (!active) return;
+        if (event === "PASSWORD_RECOVERY") setPasswordRecovery(true);
         setSession(nextSession);
         setUser(nextSession?.user ?? null);
 
@@ -206,6 +219,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setProfile(null);
   }, []);
 
+  const sendPasswordReset = useCallback<AuthContextValue["sendPasswordReset"]>(
+    async (email) => {
+      if (!EMAIL_PATTERN.test(email.trim())) return "invalidEmail";
+
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        email.trim(),
+        { redirectTo: `${window.location.origin}/reset-password` },
+      );
+
+      if (error) {
+        console.error("Password reset request failed", error.message);
+        return codeFromMessage(error.message);
+      }
+      return null;
+    },
+    [],
+  );
+
+  const updatePassword = useCallback<AuthContextValue["updatePassword"]>(
+    async (password) => {
+      if (password.length < 6) return "shortPassword";
+
+      const { error } = await supabase.auth.updateUser({ password });
+
+      if (error) {
+        console.error("Password update failed", error.message);
+        return codeFromMessage(error.message);
+      }
+      setPasswordRecovery(false);
+      return null;
+    },
+    [],
+  );
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
@@ -215,20 +262,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       isAdmin: profile?.role === "admin" && profile?.is_approved === true,
       isApproved: profile?.is_approved === true,
       needsBootstrap,
+      passwordRecovery,
       signIn,
       signUpWithInvite,
       redeemInviteCode,
+      sendPasswordReset,
+      updatePassword,
       signOut,
     }),
     [
       loading,
       needsBootstrap,
+      passwordRecovery,
       profile,
       redeemInviteCode,
+      sendPasswordReset,
       session,
       signIn,
       signOut,
       signUpWithInvite,
+      updatePassword,
       user,
     ],
   );

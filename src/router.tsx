@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import MemberDetail from "./pages/MemberDetail";
 import Members from "./pages/Members";
 import NotFound from "./pages/NotFound";
+import ResetPassword from "./pages/ResetPassword";
 import Tree from "./pages/Tree";
 
 export const routers = [
@@ -17,6 +18,11 @@ export const routers = [
     path: "/login",
     name: "login",
     element: <Login />,
+  },
+  {
+    path: "/reset-password",
+    name: "resetPassword",
+    element: <ResetPassword />,
   },
   {
     path: "/",
